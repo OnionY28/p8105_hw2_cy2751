@@ -8,16 +8,83 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(readxl)
 ```
 
 ## Problem 1
 
 ```{r}
 NYCTransit_df <- read_csv(
-  "datasets_hw2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv",na = "") %>% 
+  "datasets_hw2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv",na = "",
+  col_types = cols(Route8 = "c", Route9 = "c", Route10 = "c", Route11 = "c")) %>% 
   janitor::clean_names() %>% 
   select(line,station_name,station_latitude,station_longitude,(route1:route11),
-         entry,vending,entrance_type,ada) %>% 
-  mutate(entry = ifelse(entry == "YES",T,F)) 
+         entry,exit_only,vending,entrance_type,ada) %>% 
+  mutate(entry = ifelse(entry == "YES",T,F))
+```
+This dataset contains information of all train stations in NYC. Including variables train line, station name, the specific location of the station( latitude and longitude),all routes inside each station, entry and exit information, vending information, entrance type and whether ada compliance or not. I clean the data by importing data, identify `NA` values, specify the variable type of all routes. I also update variables names and select only the useful variables for the later question. Lastly, update variable `entry` to be a logical variable. Current dataset has dimension 1,868 × 20.\
+We cannot say these data are tidy, because when we need to focus on specific routes, routes should be a variable rather than a column name.\
+
+```{r}
+NYCTransit_df %>%  
+  select(station_name, line) %>%  
+  distinct() 
+```
+There are 465 distinct stations.
+
+```{r}
+NYCTransit_df %>% 
+  select(station_name,line,ada) %>% 
+  distinct() %>% 
+  filter(ada == T) 
+```
+In all, 84 stations are ADA compliant.
+
+```{r}
+NYCTransit_df %>%
+  filter(vending == "NO") %>% 
+  pull(entry) %>% 
+  mean()
+```
+
+Around 37.7% of station entrances/exit with vending allow entrance. 
+
+```{r}
+NYCTransit_df %>% 
+  pivot_longer(
+    cols = route1:route11,
+    names_to = "route_number",
+    values_to = "route_name",
+    names_prefix = "route"
+  ) %>% 
+  filter(route_name == "A") %>% 
+  select(line,station_name) %>% 
+    distinct()
+
+NYCTransit_df %>% 
+  pivot_longer(
+    cols = route1:route11,
+    names_to = "route_number",
+    values_to = "route_name",
+    names_prefix = "route"
+  ) %>% 
+  filter(route_name == "A") %>% 
+  select(line,station_name,ada) %>% 
+  distinct() %>% 
+    filter(ada == T)
+  
+```
+60 distinct stations serve A train. Among these stations, 17 of them are ADA compliant.
+
+
+
+
+## Problem 2
+
+```{r}
+Mr_Trash_df <- read_excel("datasets_hw2/202309 Trash Wheel Collection Data.xlsx",
+                          sheet = "Mr. Trash Wheel",range = "A2:N587") %>% 
+  janitor::clean_names() %>% 
+  mutate(sports_balls=as.integer(round(sports_balls)))
 ```
 
