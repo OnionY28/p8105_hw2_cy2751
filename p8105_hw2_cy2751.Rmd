@@ -78,13 +78,56 @@ NYCTransit_df %>%
 
 
 
-
 ## Problem 2
 
 ```{r}
-Mr_Trash_df <- read_excel("datasets_hw2/202309 Trash Wheel Collection Data.xlsx",
-                          sheet = "Mr. Trash Wheel",range = "A2:N587") %>% 
-  janitor::clean_names() %>% 
-  mutate(sports_balls=as.integer(round(sports_balls)))
+Mr_Trash_df <- read_excel("datasets_hw2/202409 Trash Wheel Collection Data.xlsx",
+                          sheet = "Mr. Trash Wheel",range = "A2:N653") %>% 
+  janitor::clean_names() %>%
+  mutate(sports_balls=as.integer(round(sports_balls))) %>% 
+  mutate(year = as.numeric(year))
+
+Professor_Trash_df <- read_excel("datasets_hw2/202409 Trash Wheel Collection Data.xlsx",
+                          sheet = "Professor Trash Wheel",range = "A2:M120") %>% 
+  janitor::clean_names()
+
+Gwynnda_Trash_df <- read_excel("datasets_hw2/202409 Trash Wheel Collection Data.xlsx",
+                          sheet = "Gwynnda Trash Wheel",range = "A2:L265") %>% 
+  janitor::clean_names()
+
+Mr_Trash_Bind <- Mr_Trash_df %>% mutate(name = "Mr_Trash") %>% 
+  select(name,everything())
+
+Professor_Trash_Bind <- Professor_Trash_df %>% mutate(name = "Professor_Trash") %>% 
+  select(name,everything())
+
+Gwynnda_Trash_Bind <- Gwynnda_Trash_df %>% mutate(name = "Gwynnda_Trash") %>% 
+  select(name,everything())
+
+(Whole_Trash_Bind <- bind_rows(Mr_Trash_Bind,Professor_Trash_Bind,Gwynnda_Trash_Bind) %>%
+  select(-month,-year)) 
+# remove month and year for tidy reason, date already includes such information
 ```
+We combined three datasets: `Mr_Trash` dataset, `Professor_Trash` dataset and `Gwynnda_Trash` dataset. Each contains information about every dumpsters, including the date we collected data on, weight of trash it deals with in ton, volume of trash and amount of each kind of trash such as plastic bottles,polystyrene.... It is noteworthy that sports ball is a unique trash that only exists in `Mr_Trash` dataset and there is no glass bottle inside `Gwynnda_Trash` dataset. \
+For `Mr_Trash` dataset, we collected information from `r nrow(Mr_Trash_df)` dumpsters;\
+For `Professor_Trash` dataset, we collected information from `r nrow(Professor_Trash_df)` dumpsters;\
+
+For `Gwynnda_Trash` dataset, we have information for 262 dumpsters, while we have `r nrow(Gwynnda_Trash_df)` pieces of information, it is because we have two rows for dumpster 21, but on the different date;\
+
+The final dataset has `r nrow(Whole_Trash_Bind)` observations in total. For each observation, we have 13 variables. We removed `month` and `year` variable in the final dataset because these are redundant variables, we can also see these information in `date` variable. \
+We added a new column `name` to the final dataset, which indicates which Trash Wheel does this dumpster come from. 
+
+```{r}
+Professor_Trash_df %>% select(weight_tons) %>% sum()
+```
+The total weight of trash collected by Professor Trash Wheel is `r Professor_Trash_df %>% select(weight_tons) %>% sum()` tons.\
+
+```{r}
+Gwynnda_Trash_df %>% 
+  filter(month == "June", year == "2022") %>% 
+  select(cigarette_butts) %>% 
+  sum()
+```
+The total number of cigarette butts collected by Gwynnda in June of 2022 is 18120.\
+
 
