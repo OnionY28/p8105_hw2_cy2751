@@ -110,11 +110,11 @@ Gwynnda_Trash_Bind <- Gwynnda_Trash_df %>% mutate(name = "Gwynnda_Trash") %>%
 # remove month and year for tidy reason, date already includes such information
 ```
 We combined three datasets: `Mr_Trash` dataset, `Professor_Trash` dataset and `Gwynnda_Trash` dataset. Each contains information about every dumpsters, including the date we collected data on, weight of trash it deals with in ton, volume of trash and amount of each kind of trash such as plastic bottles,polystyrene.... It is noteworthy that sports ball is a unique trash that only exists in `Mr_Trash` dataset and there is no glass bottle inside `Gwynnda_Trash` dataset. \
-For `Mr_Trash` dataset, we collected information from `r nrow(Mr_Trash_df)` dumpsters;\
+For `Mr_Trash` dataset, we collected information from `r nrow(Mr_Trash_df)` dumpsters and the information is between 2014 and 2024 time period;\
 
-For `Professor_Trash` dataset, we collected information from `r nrow(Professor_Trash_df)` dumpsters;\
+For `Professor_Trash` dataset, we collected information from `r nrow(Professor_Trash_df)` dumpsters and the information is between 2017 to 2024 time period;\
 
-For `Gwynnda_Trash` dataset, we have information for 262 dumpsters, while we have `r nrow(Gwynnda_Trash_df)` pieces of information, it is because we have two rows for dumpster 21, but on the different date;\
+For `Gwynnda_Trash` dataset, we have information for 262 dumpsters, while we have `r nrow(Gwynnda_Trash_df)` pieces of information, it is because we have two rows for dumpster 21, but on the different date, these information is between 2021 and 2024;\
 
 The final dataset has `r nrow(Whole_Trash_Bind)` observations in total. For each observation, we have 13 variables. We removed `month` and `year` variable in the final dataset because these are redundant variables, we can also see these information in `date` variable. \
 We added a new column `name` to the final dataset, which indicates which Trash Wheel does this dumpster come from. 
@@ -177,7 +177,7 @@ After cleaning the data, we can see except for the `bakes` dataset only have lim
 
 Also, the order of joining dataset does matters! On my first try, I joint `bakes` and `bakers` first, and use this combined dataset to join the `results` dataset. But issue appears in the final dataset: since one baker may have multiple dishes, so we apply `left_join` on bakes and bakers, but the joint dataset will not contain information for bakers in series 9 and 10. Accordingly, joining this dataset with `results` will lead to no bakers information for all bakers in series 9 and 10. This is an interesting finding I noticed. So I switch my order of joining dataset: joining `bakers` and `results` first, ensure every bakers get their personal information. And join `bakes` at last. In this case, we can avoid information incompleteness.\
 
-After getting this single, final dataset, we combine bakers' first name and last name together for simplicity. And then reorganize the order: first showing the series and episode, and then bakers' name and their dishes, with their ranking and results. Their personal information comes at last place. Last but not least, we can see this dataset is kind of redundant, because some bakers are OUT but their names still showing up in every episode of that series, we will delete these rows to keep our dataset simply and more logical. In this way, the last appearance of each baker is at the time they are OUT. \
+After getting this single, final dataset, we combine bakers' first name and last name together for simplicity. And then reorganize the order: first showing the series and episode, and then bakers' name and their dishes, with their ranking and results. Their personal information comes at last place. Last but not least, we can see this dataset is kind of redundant, because some bakers are OUT but their names still showing up in every episode of that series, we will delete these rows to keep our dataset simply and more logical. In this way, the last appearance of each baker is at the time they are OUT. One thing to mention, for baker Terry in series 9 episode 4, his result is "[a]" instead of in or out, but our information shows he is OUT in series 9 episode 5, which means we should also keep him in for episode 4.\
 
 The final tidy dataset is called `bakers_all_info_tidy`, it has 710 rows and 10 columns: these columns showing the series, episode, bakers' names, name of the bake,show_stopper, baker's ranking, results,and baker's personal information including their age, occupation and hometown. 
 
