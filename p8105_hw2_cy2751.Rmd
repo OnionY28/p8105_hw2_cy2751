@@ -9,6 +9,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readxl)
+library(knitr)
 ```
 
 ## Problem 1
@@ -110,6 +111,7 @@ Gwynnda_Trash_Bind <- Gwynnda_Trash_df %>% mutate(name = "Gwynnda_Trash") %>%
 ```
 We combined three datasets: `Mr_Trash` dataset, `Professor_Trash` dataset and `Gwynnda_Trash` dataset. Each contains information about every dumpsters, including the date we collected data on, weight of trash it deals with in ton, volume of trash and amount of each kind of trash such as plastic bottles,polystyrene.... It is noteworthy that sports ball is a unique trash that only exists in `Mr_Trash` dataset and there is no glass bottle inside `Gwynnda_Trash` dataset. \
 For `Mr_Trash` dataset, we collected information from `r nrow(Mr_Trash_df)` dumpsters;\
+
 For `Professor_Trash` dataset, we collected information from `r nrow(Professor_Trash_df)` dumpsters;\
 
 For `Gwynnda_Trash` dataset, we have information for 262 dumpsters, while we have `r nrow(Gwynnda_Trash_df)` pieces of information, it is because we have two rows for dumpster 21, but on the different date;\
@@ -130,4 +132,86 @@ Gwynnda_Trash_df %>%
 ```
 The total number of cigarette butts collected by Gwynnda in June of 2022 is 18120.\
 
+## Problem 3
 
+```{r}
+bakers <- read_csv("datasets_hw2/gbb_datasets/bakers.csv") %>% 
+  janitor::clean_names()%>% 
+  separate(baker_name,into = c("baker","last_name"),sep = " ")
+
+bakes <- read_csv("datasets_hw2/gbb_datasets/bakes.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(baker=gsub('\"', '',baker))
+
+results <- read_csv("datasets_hw2/gbb_datasets/results.csv",skip =2) %>% 
+  janitor::clean_names()%>% 
+  mutate(
+    baker = case_when(baker == "Joanne" ~ "Jo",TRUE ~ baker)
+    )
+
+anti_join(bakers,bakes,by = "baker")
+anti_join(bakes,bakers,by = "baker")
+anti_join(bakers, results, by = "baker")
+anti_join(results, bakers, by = "baker")
+anti_join(bakes,results,by = "baker")
+anti_join(results,bakes,by = "baker") # verify bakes has information only until series 8
+
+(results_and_bakers <- left_join(results,bakers,by = c("baker","series")))
+(bakers_all_info <- left_join(results_and_bakers,bakes,by = c("series","episode","baker")))
+
+(bakers_all_info_tidy <- 
+    bakers_all_info %>%
+    mutate(baker_name = str_c(baker,last_name,sep = " ")) %>% 
+    select(series,episode,baker_name,
+           signature_bake,show_stopper,technical,
+           result,everything(),-baker,-last_name) %>% 
+  filter(!is.na(result)))
+```
+**Describe your data cleaning process, including any questions you have or choices you made. Briefly discuss the final dataset.**  \
+** Not yet finished **\
+
+There are 23 bakers appears in `bakers` dataset but not inside `bakes` dataset. It is because `bakes` only contains information from series 1 - 8, so it is reasonable that some bakers only exists in `bakers` dataset but not inside `bakes` dataset. There is one exception: `"Jo"`, which matches our result in checking bakers in `bakes` that are not in `bakers`. We should remove the quotation mark for this cell in order for it to match.\
+By applying `anti_join` twice on `bakers` and `results`, we can see the bakers `Joanne` may use her name `Jo` to apply for the competition, so in datasets `bake` and `baker`, the name cannot match with the rows in `results`. As we can see, the `series` information matches. We should do data cleaning to solve this issue. For simplicity, we will change the name in `results` dataset.\
+After cleaning the data, we can see except for the `bakes` dataset only have limit information, all other `auto_join` results becomes 0, which means dataset can join perfectly with all information.
+Also remove all OUT bakers from the further results for simplicity.(The last appearance of each baker is at the time it OUT).
+Order matters, first combine which one does matters!
+
+```{r}
+write_csv(bakers_all_info_tidy, "datasets_hw2/gbb_datasets/bakers_all_info_tidy.csv")
+```
+
+```{r}
+bakers_all_info_tidy %>% 
+  filter((result == "STAR BAKER"|result == "WINNER") & 
+           (series == 5|series == 6|series == 7 |series == 8 
+         |series ==9|series ==10)) %>% 
+  select(series,episode,baker_name,technical,result)
+
+```
+** Comment on this table – were there any predictable overall winners? Any surprises? **
+
+** Not yet finished **\
+
+```{r}
+viewership_df <- read_csv("datasets_hw2/gbb_datasets/viewers.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    series_1:series_10,
+    names_to = "series",
+    names_prefix = "series_",
+    values_to = "viewership"
+  ) %>% 
+  mutate(series = as.integer(series)) %>% 
+  select(series,everything()) %>% 
+  arrange(series,episode)
+
+viewership_df %>% head(n = 10)
+
+viewership_df %>% filter(series == 1) %>% 
+  pull(viewership) %>% mean(na.rm = T)
+
+viewership_df %>% filter(series == 5) %>% 
+  pull(viewership) %>% mean()
+```
+The average viewership in Season 1 is 2.77;\
+And the average viewership in Season 5 is 10.0393.
