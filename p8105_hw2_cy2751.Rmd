@@ -168,7 +168,7 @@ anti_join(results,bakes,by = "baker") # verify bakes has information only until 
   filter(!is.na(result)))
 ```
 
-For the data cleaning process, I first imported all three datasets and clean their names. Separating bakers' full name into `first name` and `last name`. Since in the other two datasets, we only use their first name. And then, by viewing individual datasets and using `anti-join` function, checking bakers' information in between any two of the datasets, for example: to see if there is any bakers inside `bakers` dataset but not in `bakes` dataset, here are my findings:\
+For the data cleaning process, I first imported all three datasets and clean their names. Separating bakers' full name into `baker`(first name,for joining purpose) and `last_name`. Since in the other two datasets, we only use their first name. And then, by viewing individual datasets and using `anti_join` function, checking bakers' information in between any two of the datasets, for example: to see if there is any bakers inside `bakers` dataset but not in `bakes` dataset, here are my findings:\
 There are 23 bakers appears in `bakers` dataset but not inside `bakes` dataset. It is because `bakes` only contains information from series 1 - 8, so it is reasonable that some bakers only exists in `bakers` dataset but not inside `bakes` dataset, like bakers attending series 9 and 10 . There is one exception: `"Jo"`, which matches our result in checking bakers in `bakes` that are not in `bakers`. We should remove the quotation mark for this cell in order for it to match.\
 
 By applying `anti_join` twice on `bakers` and `results`, we can see the bakers `Joanne` may use her name `Jo` to apply for the competition, because it is the only situation that does not match, we can assume she was using nick name to apply for this competition, so in datasets `bake` and `baker`, the name cannot match with the rows in `results`. Also, the `series` information matches. We should do data cleaning to solve this issue. For simplicity, we will change the name in `results` dataset.\
@@ -197,7 +197,6 @@ bakers_all_info_tidy %>%
   knitr::kable()
 
 ```
-**Were there any predictable overall winners? Any surprises? **
 
 We will discuss this question by series order:\
 In series 5, winner is kind of surprise, it seems Richard Burr gots more times of star baker;\
